@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://script.google.com">
 <title>ชอบสายเทคนิค</title>
 <style>
   :root { --crop: 44px; }              /* ความสูงแถบ Google ที่จะตัดทิ้ง (ปรับได้ด้วย ?crop=) */
@@ -61,7 +62,18 @@ function showError(text) {
 
   var frame = document.getElementById("app");
   frame.onload = function () { document.getElementById("msg").style.display = "none"; };
-  frame.src = GAS_URL + "?" + q.toString();
+  var finalUrl = GAS_URL + "?" + q.toString();
+  frame.src = finalUrl;
+
+  // 🔍 โหมดดีบัก: เปิดด้วย ...?token=xxx&debug=1 จะแสดง URL ที่ iframe โหลดจริงบนหน้าจอ
+  if (p.get("debug") === "1") {
+    var m = document.getElementById("msg");
+    m.style.zIndex = 5; m.style.fontSize = "12px"; m.style.wordBreak = "break-all";
+    m.style.background = "rgba(6,11,19,.92)"; m.style.height = "auto"; m.style.bottom = "auto";
+    m.innerHTML = "<b>DEBUG iframe src:</b><br>" + finalUrl.replace(/&/g, "&amp;") +
+                  "<br><br>crop=" + crop + "px<br><u onclick=\"this.parentNode.style.display='none'\">ปิด</u>";
+    frame.onload = null;
+  }
 })();
 </script>
 </body>
