@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ชอบสายเทคนิค</title>
+<style>
+  :root { --crop: 44px; }              /* ความสูงแถบ Google ที่จะตัดทิ้ง (ปรับได้ด้วย ?crop=) */
+  html, body { margin: 0; height: 100%; background: #060b13; overflow: hidden; }
+  #wrap { position: fixed; inset: 0; overflow: hidden; }
+  #app  { position: absolute; left: 0; width: 100%; border: 0;
+          top: calc(var(--crop) * -1); height: calc(100% + var(--crop)); }
+  #msg  { position: absolute; inset: 0; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; text-align: center;
+          padding: 20px; color: #00ffcc; font-family: sans-serif; font-size: 15px;
+          background: #060b13; z-index: 2; }
+  #msg.err { color: #ff4757; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="msg">⏳ กำลังเปิดหน้าค้นหา...</div>
+  <iframe id="app" title="app" allow="clipboard-write"></iframe>
+</div>
+
+<script>
+// ====== ตั้งค่า ======
+var GAS_URL = "https://script.google.com/macros/s/AKfycbzmwpDuZTdFOSchkqr0MrbW49hXDySuwKhD-X54IOMbeZ7BU2ynOMesaEXteWNKoTUSQw/exec";
+var DEFAULT_CROP = 44;                                      // px
+
+// ====== อ่านพารามิเตอร์จาก query (?token=...&sub=...&crop=...) ======
+function getParams() {
+  var p = new URLSearchParams(location.search);
+  var st = p.get("liff.state");
+  if (st) {
+    var q = new URLSearchParams(st.charAt(0) === "?" ? st.slice(1) : st);
+    q.forEach(function (v, k) { if (!p.has(k)) p.set(k, v); });
+  }
+  return p;
+}
+
+function showError(text) {
+  var m = document.getElementById("msg");
+  m.className = "err";
+  m.innerHTML = "⛔ " + text + "<br><small>กรุณากดปุ่มจากแชท LINE ใหม่อีกครั้ง</small>";
+}
+
+(function main() {
+  var p = getParams();
+  var token = p.get("token") || "";
+  var crop = parseInt(p.get("crop"), 10);
+  if (isNaN(crop)) crop = DEFAULT_CROP;
+  document.documentElement.style.setProperty("--crop", crop + "px");
+
+  if (!token) { showError("ไม่พบ token"); return; }
+
+  var q = new URLSearchParams();
+  q.set("action", "open");
+  q.set("token", token);
+  if (p.get("sub")) q.set("sub", p.get("sub"));
+
+  var frame = document.getElementById("app");
+  frame.onload = function () { document.getElementById("msg").style.display = "none"; };
+  frame.src = GAS_URL + "?" + q.toString();
+})();
+</script>
+</body>
+</html>
